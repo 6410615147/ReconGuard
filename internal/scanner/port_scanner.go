@@ -32,10 +32,8 @@ func (ps *PortScanner) Scan() {
 		// Perform port scanning for each port
 		address := fmt.Sprintf("%s:%d", ps.TargetHost, port)
 		_, err := net.DialTimeout("tcp", address, 1*time.Second)
-		if err != nil {
-			fmt.Printf("%d\tclosed\n", port)
-		} else {
-			fmt.Printf("%d\topen\n", port)
+		if err == nil {
+			fmt.Printf("Port %d open\n", port)
 		}
 		time.Sleep(10000)
 	}
@@ -50,9 +48,7 @@ func (ps *PortScanner) ScanRange(startPort, endPort int) {
 		// Perform port scanning for each port
 		address := fmt.Sprintf("%s:%d", ps.TargetHost, port)
 		_, err := net.DialTimeout("tcp", address, 1*time.Second)
-		if err != nil {
-			fmt.Printf("Port %d closed\n", port)
-		} else {
+		if err == nil {
 			fmt.Printf("Port %d open\n", port)
 		}
 	}
@@ -74,10 +70,8 @@ func (ps *PortScanner) ScanPorts(ports []int) {
 		// Perform port scanning for each port
 		address := fmt.Sprintf("%s:%d", ps.TargetHost, port)
 		_, err := net.DialTimeout("tcp", address, 1*time.Second)
-		if err != nil {
-			fmt.Printf("%d\tclosed\n", port)
-		} else {
-			fmt.Printf("%d\topen\n", port)
+		if err == nil {
+			fmt.Printf("Port %d open\n", port)
 		}
 	}
 }
