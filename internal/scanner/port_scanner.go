@@ -1,5 +1,3 @@
-// internal/scanner/port_scanner.go
-
 package scanner
 
 import (
@@ -26,16 +24,18 @@ func NewPortScanner(targetHost string, ports []int) *PortScanner {
 
 // Scan scans the specified ports on the target host
 func (ps *PortScanner) Scan() {
-	fmt.Printf("Scanning ports on %s...\n", ps.TargetHost)
+	fmt.Println("Starting reconaissance...")
+	fmt.Printf("RecG report for %s\n", ps.TargetHost)
+	fmt.Println("PORT\tSTATUS\tSERVICE")
 
 	for _, port := range ps.Ports {
 		// Perform port scanning for each port
 		address := fmt.Sprintf("%s:%d", ps.TargetHost, port)
 		_, err := net.DialTimeout("tcp", address, 1*time.Second)
 		if err != nil {
-			fmt.Printf("Port %d closed\n", port)
+			fmt.Printf("%d\tclosed\n", port)
 		} else {
-			fmt.Printf("Port %d open\n", port)
+			fmt.Printf("%d\topen\n", port)
 		}
 		time.Sleep(10000)
 	}
@@ -43,7 +43,8 @@ func (ps *PortScanner) Scan() {
 
 // ScanRange scans ports within the specified range on the target host
 func (ps *PortScanner) ScanRange(startPort, endPort int) {
-	fmt.Printf("Scanning ports on %s within range %d-%d...\n", ps.TargetHost, startPort, endPort)
+	fmt.Println("Starting reconaissance...")
+	fmt.Printf("RecG report for %s within range %d-%d...\n", ps.TargetHost, startPort, endPort)
 
 	for port := startPort; port <= endPort; port++ {
 		// Perform port scanning for each port
@@ -65,16 +66,18 @@ func (ps *PortScanner) ScanCommon() {
 
 // ScanPorts scans the specified ports on the target host
 func (ps *PortScanner) ScanPorts(ports []int) {
-	fmt.Printf("Scanning specified ports on %s...\n", ps.TargetHost)
+	fmt.Println("Starting reconaissance...")
+	fmt.Printf("RecG report for %s\n", ps.TargetHost)
+	fmt.Println("PORT\tSTATUS\tSERVICE")
 
 	for _, port := range ports {
 		// Perform port scanning for each port
 		address := fmt.Sprintf("%s:%d", ps.TargetHost, port)
 		_, err := net.DialTimeout("tcp", address, 1*time.Second)
 		if err != nil {
-			fmt.Printf("Port %d closed\n", port)
+			fmt.Printf("%d\tclosed\n", port)
 		} else {
-			fmt.Printf("Port %d open\n", port)
+			fmt.Printf("%d\topen\n", port)
 		}
 	}
 }
