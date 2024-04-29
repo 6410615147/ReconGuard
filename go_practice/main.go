@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"os/exec"
@@ -8,7 +9,17 @@ import (
 )
 
 func main() {
-	target := "https://quizlet.com"
+	// Define command-line flags
+	targetFlag := flag.String("o", "", "Target website URL")
+	flag.Parse()
+
+	// Check if targetFlag is provided
+	if *targetFlag == "" {
+		fmt.Println("Please provide a target website URL using the -o flag")
+		return
+	}
+
+	target := *targetFlag
 	resp, err := http.Get(target)
 	if err != nil {
 		fmt.Println("Error:", err)
