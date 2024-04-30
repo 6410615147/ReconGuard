@@ -16,6 +16,11 @@ type PortScanner struct {
 
 // NewPortScanner creates a new PortScanner instance with the given target host and ports
 func NewPortScanner(targetHost string, ports []int) *PortScanner {
+	if strings.Contains(targetHost, "http://") {
+		targetHost = strings.TrimPrefix(targetHost, "http://")
+	} else if strings.Contains(targetHost, "https://") {
+		targetHost = strings.TrimPrefix(targetHost, "https://")
+	}
 	return &PortScanner{
 		TargetHost: targetHost,
 		Ports:      ports,
@@ -112,23 +117,27 @@ func (ps *PortScanner) ScanWithServiceDetection(portRange string) {
 		return
 	}
 
-	ports := GeneratePortRange(startPort, endPort)
+	// ports := GeneratePortRange(startPort, endPort)
+	var ports []int
+
+	// Populate the slice with numbers from x to y
+	for i := startPort; i <= endPort; i++ {
+		ports = append(ports, i)
+	}
 
 	fmt.Println("Starting reconnaissance...")
-	fmt.Printf("RecG report for %s\n", ps.TargetHost)
+	fmt.Printf("Recon report for %s\n", ps.TargetHost)
 	fmt.Println("PORT\tSTATUS\tSERVICE\tVERSION")
 
 	for _, port := range ports {
 		address := fmt.Sprintf("%s:%d", ps.TargetHost, port)
 		conn, err := net.DialTimeout("tcp", address, 1*time.Second)
 		if err != nil {
-            continue // Skip to the next port if connection failed
-        }
-        defer conn.Close()
+			continue
+		}
+		defer conn.Close()
 
-        fmt.Printf("Port %d open\n", port)
-        serviceName, serviceVersion := getServiceInfo(port)
-        fmt.Printf("\tService: %s\n", serviceName)
-        fmt.Printf("\tVersion: %s\n", serviceVersion)
+		serviceName, serverInfo := ps.getServiceInfo(port)
+		fmt.Printf("%d\tOpen\t%s\t%s\n", port, serviceName, serverInfo)
 	}
 }
