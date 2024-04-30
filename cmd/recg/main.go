@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 	"recg/internal/scanner"
 	"strings"
@@ -14,19 +16,19 @@ func main() {
 
 	// Define flags for command-line options
 	targetHost := flag.String("host", "localhost", "Target host to scan")
+	osFlag := flag.Bool("o", false, "Target website URL")
 	portRange := flag.String("p", "1-1023", "Port range to scan (e.g., '80' or '80-100')")
 	commonPort := flag.Bool("cp", false, "Scan common ports")
-
+	wordlistSize := flag.String("dirb", "common", "Specify the size of the wordlist (common, medium, large)")
 	// Define flag for web server reconnaissance
-	targetFlag := flag.String("o", "", "Target website URL")
+	targetFlag := flag.String("u", "", "Target website URL")
 
 	// Parse command-line flags
 	flag.Parse()
-
+	fmt.Println(osFlag)
+	// print(portRange)
 	// Perform web server reconnaissance if -o flag is provided
-	if *targetFlag != "" {
-		performWebServerReconnaissance(*targetFlag)
-	}
+
 	flagHandlers := map[*flag.Flag]func(){
 		flag.Lookup("p"): func() { port_flag(*targetHost, *portRange) },
 	}
@@ -37,11 +39,78 @@ func main() {
 			handler()
 		}
 		if *commonPort {
-			commonPort_flag(*targetHost)
+			commonPort_flag(*targetFlag)
 		}
 	})
+
+	if flag.Lookup("o") != nil {
+
+		performWebServerReconnaissance(*targetFlag)
+	}
+	// --------------------- path --------------
+	web := *targetFlag
+	fmt.Println(web)
+
+	// Choose wordlist file based on the flag value
+	var wordlistPath string
+	switch *wordlistSize {
+	case "common":
+		wordlistPath = "../../wordlists/common.txt"
+	case "medium":
+		wordlistPath = "../../wordlists/medium.txt"
+	case "large":
+		wordlistPath = "../../wordlists/large.txt"
+	default:
+		fmt.Println("Invalid wordlist size specified.")
+		return
+	}
+
+	// Open the wordlist file
+	file, err := os.Open(wordlistPath)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Read lines from the wordlist file
+	scanner := bufio.NewScanner(file)
+	// fmt.Println("Method 2 Output:")
+	var word []string // Slice to store lines from the file
+	for scanner.Scan() {
+		word = append(word, scanner.Text()) // Append each line to the slice
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error scanning file:", err)
+		return
+	}
+
+	// Check URLs constructed from the wordlist
+	for _, i := range word {
+		checkURL(web + "/" + i + "/")
+	}
 }
 
+func checkURL(url string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		// fmt.Printf("Error accessing %s: %v\n", url, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Handle different HTTP status codes
+	if resp.StatusCode == http.StatusOK {
+		fmt.Printf("%s returns status 200 \n", url)
+	} else if resp.StatusCode == http.StatusMovedPermanently {
+		fmt.Printf("%s returns status 301 \n", url)
+	} else if resp.StatusCode == http.StatusFound {
+		fmt.Printf("%s returns status 302 \n", url)
+	} else if resp.StatusCode == 403 {
+		fmt.Printf("%s returns status 403 \n", url)
+	}
+}
 func performWebServerReconnaissance(target string) {
 	resp, err := http.Get(target)
 	if err != nil {
@@ -56,7 +125,8 @@ func performWebServerReconnaissance(target string) {
 	} else if strings.Contains(target, "https://") {
 		target = strings.TrimPrefix(target, "https://")
 	}
-	fmt.Println("Updated target URL:", target)
+
+	// fmt.Println("Updated target URL:", target)
 	cmd := exec.Command("nmap", "-O", target)
 
 	output, err := cmd.CombinedOutput()
@@ -86,7 +156,11 @@ func performWebServerReconnaissance(target string) {
 		fmt.Println("OS detection: ", cpeLine)
 		fmt.Println("OS Guess: ", osGuessLine)
 	}
+
+	// path scan ---------------
+
 }
+
 func port_flag(target string, portRange string) {
 
 	// Parse the port range string
