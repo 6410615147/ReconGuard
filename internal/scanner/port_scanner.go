@@ -26,7 +26,7 @@ func NewPortScanner(targetHost string, ports []int) *PortScanner {
 func (ps *PortScanner) Scan() {
 	fmt.Println("Starting reconaissance...")
 	fmt.Printf("RecG report for %s\n", ps.TargetHost)
-	fmt.Println("PORT\tSTATUS\tSERVICE")
+	fmt.Println("PORT\tSTATUS")
 
 	for _, port := range ps.Ports {
 		// Perform port scanning for each port
@@ -64,7 +64,7 @@ func (ps *PortScanner) ScanCommon() {
 func (ps *PortScanner) ScanPorts(ports []int) {
 	fmt.Println("Starting reconaissance...")
 	fmt.Printf("RecG report for %s\n", ps.TargetHost)
-	fmt.Println("PORT\tSTATUS\tSERVICE")
+	fmt.Println("PORT\tSTATUS")
 
 	for _, port := range ports {
 		// Perform port scanning for each port
@@ -103,4 +103,32 @@ func ParsePortRange(portRange string) (startPort, endPort int, err error) {
 	}
 
 	return startPort, endPort, nil
+}
+
+func (ps *PortScanner) ScanWithServiceDetection(portRange string) {
+	startPort, endPort, err := ParsePortRange(portRange)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	ports := GeneratePortRange(startPort, endPort)
+
+	fmt.Println("Starting reconnaissance...")
+	fmt.Printf("RecG report for %s\n", ps.TargetHost)
+	fmt.Println("PORT\tSTATUS\tSERVICE\tVERSION")
+
+	for _, port := range ports {
+		address := fmt.Sprintf("%s:%d", ps.TargetHost, port)
+		conn, err := net.DialTimeout("tcp", address, 1*time.Second)
+		if err != nil {
+            continue // Skip to the next port if connection failed
+        }
+        defer conn.Close()
+
+        fmt.Printf("Port %d open\n", port)
+        serviceName, serviceVersion := getServiceInfo(port)
+        fmt.Printf("\tService: %s\n", serviceName)
+        fmt.Printf("\tVersion: %s\n", serviceVersion)
+	}
 }
