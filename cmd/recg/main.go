@@ -22,10 +22,11 @@ func main() {
 	wordlistSize := flag.String("dirb", "common", "Specify the size of the wordlist (common, medium, large)")
 	// Define flag for web server reconnaissance
 	targetFlag := flag.String("u", "", "Target website URL")
-
+	scanServices := flag.Bool("sv", false, "Enable service detection")
 	// Parse command-line flags
 	flag.Parse()
 	fmt.Println(osFlag)
+	fmt.Println(scanServices)
 	// print(portRange)
 	// Perform web server reconnaissance if -o flag is provided
 
@@ -33,7 +34,11 @@ func main() {
 		flag.Lookup("p"): func() { port_flag(*targetHost, *portRange) },
 	}
 
-	// Iterate over defined flags and call corresponding functions
+	if flag.Lookup("sv") != nil {
+		portScanner := scanner.NewPortScanner(*targetFlag, nil)
+		portScanner.ScanWithServiceDetection(*portRange)
+	}
+
 	flag.Visit(func(f *flag.Flag) {
 		if handler, ok := flagHandlers[f]; ok {
 			handler()
