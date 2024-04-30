@@ -15,42 +15,49 @@ func main() {
 	fmt.Println("Welcome to ReconGuard")
 
 	// Define flags for command-line options
-	targetHost := flag.String("host", "localhost", "Target host to scan")
+	// targetHost := flag.String("host", "localhost", "Target host to scan")
+	scanServices := flag.Bool("sv", false, "Enable service detection")
 	osFlag := flag.Bool("o", false, "Target website URL")
 	portRange := flag.String("p", "1-1023", "Port range to scan (e.g., '80' or '80-100')")
 	commonPort := flag.Bool("cp", false, "Scan common ports")
-	wordlistSize := flag.String("dirb", "common", "Specify the size of the wordlist (common, medium, large)")
+	wordlistSize := flag.String("dirb", "", "Specify the size of the wordlist (common, medium, large)")
 	// Define flag for web server reconnaissance
 	targetFlag := flag.String("u", "", "Target website URL")
-	scanServices := flag.Bool("sv", false, "Enable service detection")
+
 	// Parse command-line flags
 	flag.Parse()
-	fmt.Println(osFlag)
-	fmt.Println(scanServices)
-	// print(portRange)
+
+	// *osFlag
+
 	// Perform web server reconnaissance if -o flag is provided
 
-	flagHandlers := map[*flag.Flag]func(){
-		flag.Lookup("p"): func() { port_flag(*targetHost, *portRange) },
-	}
+	// flagHandlers := map[*flag.Flag]func(){
+	// 	flag.Lookup("p"): func() { port_flag(*targetHost, *portRange) },
+	// }
+	// println(flag.Lookup("sv"))
 
-	if flag.Lookup("sv") != nil {
+	if *scanServices != false {
 		portScanner := scanner.NewPortScanner(*targetFlag, nil)
+		// println(portScanner.TargetHost)
 		portScanner.ScanWithServiceDetection(*portRange)
+	} else if flag.Lookup("p") != nil {
+		flag.Visit(func(f *flag.Flag) {
+			// if handler, ok := flagHandlers[f]; ok {
+			// 	handler()
+			// }
+			if *commonPort {
+				commonPort_flag(*targetFlag)
+			}
+		})
+
+	} else {
+		println()
 	}
 
-	flag.Visit(func(f *flag.Flag) {
-		if handler, ok := flagHandlers[f]; ok {
-			handler()
-		}
-		if *commonPort {
-			commonPort_flag(*targetFlag)
-		}
-	})
-
-	if flag.Lookup("o") != nil {
-
+	if *osFlag == true {
 		performWebServerReconnaissance(*targetFlag)
+	} else {
+		print()
 	}
 	// --------------------- path --------------
 	web := *targetFlag
@@ -66,7 +73,7 @@ func main() {
 	case "large":
 		wordlistPath = "../../wordlists/large.txt"
 	default:
-		fmt.Println("Invalid wordlist size specified.")
+
 		return
 	}
 
@@ -92,9 +99,13 @@ func main() {
 	}
 
 	// Check URLs constructed from the wordlist
-	for _, i := range word {
-		checkURL(web + "/" + i + "/")
+	if *wordlistSize != "" {
+		for _, i := range word {
+			checkURL(web + "/" + i + "/")
+		}
 	}
+	// fmt.Println(osFlag)
+	// fmt.Println(scanServices)
 }
 
 func checkURL(url string) {
