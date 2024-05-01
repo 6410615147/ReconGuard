@@ -1,5 +1,3 @@
-# common.txt from dirb
-#
 .bash_history
 .bashrc
 .cache
