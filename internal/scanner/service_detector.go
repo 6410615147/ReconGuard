@@ -13,6 +13,26 @@ func (ps *PortScanner) getServiceInfo(port int) (string, string) {
 		return ps.getHTTPServerInfo(port)
 	case 22:
 		return ps.getSSHServerInfo(port)
+	case 21:
+		return "FTP", "Unknown"
+	case 23:
+        return "Telnet", "Telnet Protocol"
+	case 25:
+		return "SMTP", "Unknown"
+	case 53:
+		return "DNS", "Unknown"
+	case 110:
+		return "POP3", "Unknown"
+	case 143:
+		return "IMAP", "Unknown"
+	case 443:
+		return "HTTPS", "Unknown"
+	case 465:
+        return "SMTPS", "Unknown"
+	case 3306:
+		return "MySQL", "Unknown"
+	case 5432:
+		return "PostgreSQL", "Unknown"
 	default:
 		return "Unknown", "Unknown"
 	}
