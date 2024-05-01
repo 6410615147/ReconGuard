@@ -31,25 +31,23 @@ func main() {
 
 	// Perform web server reconnaissance if -o flag is provided
 
-	// flagHandlers := map[*flag.Flag]func(){
-	// 	flag.Lookup("p"): func() { port_flag(*targetHost, *portRange) },
-	// }
+	flagHandlers := map[*flag.Flag]func(){
+		flag.Lookup("p"): func() { port_flag(*targetFlag, *portRange) },
+	}
 	// println(flag.Lookup("sv"))
 
 	if *scanServices != false {
 		portScanner := scanner.NewPortScanner(*targetFlag, nil)
 		// println(portScanner.TargetHost)
 		portScanner.ScanWithServiceDetection(*portRange)
+	}else if *commonPort == true {
+		commonPort_flag(*targetFlag)
 	} else if flag.Lookup("p") != nil {
 		flag.Visit(func(f *flag.Flag) {
-			// if handler, ok := flagHandlers[f]; ok {
-			// 	handler()
-			// }
-			if *commonPort {
-				commonPort_flag(*targetFlag)
+			if handler, ok := flagHandlers[f]; ok {
+				handler()
 			}
 		})
-
 	} else {
 		println()
 	}
@@ -61,7 +59,7 @@ func main() {
 	}
 	// --------------------- path --------------
 	web := *targetFlag
-	fmt.Println(web)
+	// fmt.Println(web)
 
 	// Choose wordlist file based on the flag value
 	var wordlistPath string
@@ -118,13 +116,13 @@ func checkURL(url string) {
 
 	// Handle different HTTP status codes
 	if resp.StatusCode == http.StatusOK {
-		fmt.Printf("%s returns status 200 \n", url)
+		fmt.Printf("status 200 -> url: %s\n", url)
 	} else if resp.StatusCode == http.StatusMovedPermanently {
-		fmt.Printf("%s returns status 301 \n", url)
+		fmt.Printf("status 301 -> url: %s\n", url)
 	} else if resp.StatusCode == http.StatusFound {
-		fmt.Printf("%s returns status 302 \n", url)
+		fmt.Printf("status 302 -> url: %s\n", url)
 	} else if resp.StatusCode == 403 {
-		fmt.Printf("%s returns status 403 \n", url)
+		fmt.Printf("status 403 -> url: %s\n", url)
 	}
 }
 func performWebServerReconnaissance(target string) {
